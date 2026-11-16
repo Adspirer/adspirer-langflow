@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schemas.langflow.org/extension/v1.json",
+  "id": "lfx-adspirer",
+  "version": "0.1.0",
+  "name": "Adspirer",
+  "description": "Adspirer advertising components: campaign performance, wasted spend, keyword research and approved changes on Google Ads, Meta Ads, LinkedIn Ads and TikTok Ads.",
+  "lfx": {
+    "compat": ["1"]
+  },
+  "bundles": [
+    {
+      "name": "adspirer",
+      "path": "components/adspirer",
+      "display_name": "Adspirer",
+      "icon": "Megaphone"
+    }
+  ]
+}

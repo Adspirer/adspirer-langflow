@@ -1,0 +1,136 @@
+---
+title: Adspirer
+slug: /bundles-adspirer
+---
+
+import Icon from "@site/src/components/icon";
+import PartialParams from '@site/docs/_partial-hidden-params.mdx';
+import PartialLfxBundlesInstall from '@site/docs/_partial-bundle-lfx-bundles-install.mdx';
+
+<PartialLfxBundlesInstall />
+
+<Icon name="Blocks" aria-hidden="true" /> [**Bundles**](/components-bundle-components) contain custom components that support specific third-party integrations with Langflow.
+
+This page describes the components that are available in the **Adspirer** bundle.
+
+[Adspirer](https://www.adspirer.com) connects AI agents to advertising accounts on Google Ads, Meta Ads, LinkedIn Ads, and TikTok Ads.
+Its API reports campaign performance, finds wasted spend, researches keywords, and creates or updates campaigns.
+
+All components need an Adspirer API key.
+Create one at [adspirer.ai/keys](https://adspirer.ai/keys) and enter it in the **Adspirer API Key** field, or store it in a [global variable](/configuration-global-variables) named `ADSPIRER_API_KEY`.
+The key acts as the Adspirer user who created it, and reaches the ad accounts that user connected at [adspirer.ai/connections](https://adspirer.ai/connections).
+
+Langflow only sends requests to `api.adspirer.ai`. Adspirer holds the ad platform credentials and calls the ad platforms.
+
+Every component returns a [`Data`](/data-types#json) object.
+Its text is the written report, and its data has the API payload: `text`, `structured` when the tool provides it, and the `quota` used on your Adspirer plan.
+When a request fails, the object has an `error` field with the reason instead.
+
+For more information, see the [Adspirer API reference](https://www.adspirer.com/docs/api-reference/introduction).
+
+## Changes to ad accounts
+
+Four of the five components are read-only.
+**Adspirer Run Tool** can run tools that change an ad account, and only when you turn on **Allow Changes**:
+
+* With **Allow Changes** off, which is the default, the component only runs read-only tools. It refuses any other tool and returns the reason.
+* With **Allow Changes** on, the component also runs tools that create or update campaigns, budgets, keywords, and ads. Each run sends an idempotency key, so a retried request can't create a second campaign. Adspirer creates new campaigns paused.
+* Tools that remove keywords, creatives, or monitors also need **Allow Removals**.
+
+When the component is used as a [tool](/agents-tools), the agent can't change these settings.
+A flow runs without a person watching it, so only turn on **Allow Changes** in a flow where a person approves each change first.
+
+## Adspirer Accounts
+
+This component lists the ad accounts connected to Adspirer, with the account IDs that the other components take.
+
+Run it first when more than one account is connected on a platform.
+It doesn't use your Adspirer tool-call allowance.
+
+### Adspirer Accounts parameters
+
+<PartialParams />
+
+| Name | Type | Description |
+|------|------|-------------|
+| Adspirer API Key (`api_key`) | SecretString | Input parameter. Your Adspirer API key. |
+| Platform (`platform`) | String | Input parameter. List accounts on one platform, or on all of them. Default: `All platforms`. |
+| Timeout (seconds) (`timeout`) | Float | Input parameter. How long to wait for Adspirer to answer. Default: `120`. |
+
+## Adspirer Campaign Performance
+
+This component reports campaign spend, conversions, CPA, ROAS, and CTR for one ad platform.
+
+When the component is used as a [tool](/agents-tools), the agent can set the platform, the account, and the date range.
+
+### Adspirer Campaign Performance parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| Adspirer API Key (`api_key`) | SecretString | Input parameter. Your Adspirer API key. |
+| Platform (`platform`) | String | Input parameter. The ad platform to report on: `Google Ads`, `Meta Ads`, `LinkedIn Ads`, or `TikTok Ads`. Default: `Google Ads`. |
+| Account ID (`account_id`) | String | Input parameter. The ad account to use. Leave empty when only one account is connected on this platform. |
+| Lookback Days (`lookback_days`) | Integer | Input parameter. How many days back to report on, up to 120. Ignored when dates are set. Default: `30`. |
+| Start Date (`start_date`) | String | Input parameter. Optional. First day of a custom range, as `YYYY-MM-DD`. Set **End Date** as well. |
+| End Date (`end_date`) | String | Input parameter. Optional. Last day of a custom range, as `YYYY-MM-DD`. Set **Start Date** as well. |
+| Raw Metrics Only (`raw_data`) | Boolean | Input parameter. Return only the metrics as JSON, without the written analysis and recommendations. Default: `false`. |
+| Timeout (seconds) (`timeout`) | Float | Input parameter. How long to wait for Adspirer to answer. Default: `120`. |
+
+## Adspirer Wasted Spend
+
+This component finds campaigns that lose money or underperform on one ad platform, with the spend at stake.
+
+It proposes fixes and applies none.
+
+### Adspirer Wasted Spend parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| Adspirer API Key (`api_key`) | SecretString | Input parameter. Your Adspirer API key. |
+| Platform (`platform`) | String | Input parameter. The ad platform to analyze: `Google Ads`, `Meta Ads`, `LinkedIn Ads`, or `TikTok Ads`. Default: `Google Ads`. |
+| Account ID (`account_id`) | String | Input parameter. The ad account to use. Leave empty when only one account is connected on this platform. |
+| Lookback Days (`lookback_days`) | Integer | Input parameter. How many days back to analyze, up to 120. Ignored when dates are set. Default: `30`. |
+| Target ROAS (`target_roas`) | Float | Input parameter. Optional. The return on ad spend to judge campaigns against, such as `3` for 3x. `0` uses the account's own goal or history. Default: `0`. |
+| Start Date (`start_date`) | String | Input parameter. Optional. First day of a custom range, as `YYYY-MM-DD`. Set **End Date** as well. |
+| End Date (`end_date`) | String | Input parameter. Optional. Last day of a custom range, as `YYYY-MM-DD`. Set **Start Date** as well. |
+| Timeout (seconds) (`timeout`) | Float | Input parameter. How long to wait for Adspirer to answer. Default: `120`. |
+
+## Adspirer Keyword Research
+
+This component researches Google Ads keywords and returns search volume, cost per click, competition, and a budget estimate.
+
+Enter a business description, seed keywords, or a website URL.
+
+### Adspirer Keyword Research parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| Adspirer API Key (`api_key`) | SecretString | Input parameter. Your Adspirer API key. |
+| Business Description (`business_description`) | String | Input parameter. What the business sells and to whom. |
+| Seed Keywords (`seed_keywords`) | String | Input parameter. Optional. Keywords to start from, comma-separated. |
+| Website URL (`website_url`) | String | Input parameter. Optional. The site to find keywords for. Adspirer reads it on its own servers. |
+| Target Location (`target_location`) | String | Input parameter. The country or region the ads will run in. Default: `United States`. |
+| Google Ads Customer ID (`account_id`) | String | Input parameter. The Google Ads account to use. Leave empty when only one is connected. |
+| Timeout (seconds) (`timeout`) | Float | Input parameter. How long to wait for Adspirer to answer. Default: `120`. |
+
+## Adspirer Run Tool
+
+This component runs any tool in the Adspirer API by name, such as `list_campaigns` or `analyze_search_terms`.
+
+The [Adspirer API reference](https://www.adspirer.com/docs/api-reference/introduction) lists every tool and its arguments.
+See [Changes to ad accounts](#changes-to-ad-accounts) for which tools run.
+
+### Adspirer Run Tool parameters
+
+| Name | Type | Description |
+|------|------|-------------|
+| Adspirer API Key (`api_key`) | SecretString | Input parameter. Your Adspirer API key. |
+| Tool Name (`tool_name`) | String | Input parameter. The Adspirer tool to run. |
+| Arguments (`tool_arguments`) | String | Input parameter. The tool's arguments as a JSON object, such as `{"lookback_days": 30}`. Leave empty for none. |
+| Allow Changes (`allow_changes`) | Boolean | Input parameter. Also run tools that create or update campaigns, budgets, keywords, and ads. Default: `false`. |
+| Allow Removals (`allow_removals`) | Boolean | Input parameter. Also run tools that remove keywords, creatives, or monitors. Needs **Allow Changes**. Default: `false`. |
+| Timeout (seconds) (`timeout`) | Float | Input parameter. How long to wait for Adspirer to answer. Default: `120`. |
+
+## See also
+
+* [**MCP Tools** component](/mcp-client)
